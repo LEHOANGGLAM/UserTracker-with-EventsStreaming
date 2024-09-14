@@ -27,25 +27,21 @@ public class UserVisitedPerPageStream {
         KStream<String, String> pageViewStream = builder.stream("user_clicks");
 
         // Transform the value to extract page information
-        KStream<String, String> userPageStream = pageViewStream.mapValues(value -> {
-            // Extract page information from the value (e.g., "User user_3 visited home")
-            String[] parts = value.split(" ");
-            return parts[3];  // Extracts the page, assuming the format is always the same
-        });
-
-        // Group by key and value (e.g., user ID and page) and count occurrences
-        KTable<String, Long> pageViewCounts = userPageStream
-            .groupBy((key, page) -> key + "-" + page) // e.g., "user_3-home"
-            .count(Materialized.as("user_visited_page_counts-storage"));
+        KTable<String, Long> userPageViewCounts = pageViewStream.
+                                                //map val from "User user_1 visited product-1" to "product-1"
+                                                mapValues(value -> {
+                                                    String[] parts = value.split(" ");
+                                                    return parts[1] + "-" + parts[3];
+                                                })
+                                                .selectKey((key, val) -> val) // Select new key (user_3-product-1), discard old key
+                                                .groupByKey()  // Group by new key before aggregation
+                                                .count(Materialized.as("user_visited_page_counts-storage"));
 
         // Output the aggregated counts to a new Kafka topic ('page_view_counts')
-        pageViewCounts.toStream().to("user_visited_page_counts", Produced.with(Serdes.String(), Serdes.Long()));
+        userPageViewCounts.toStream().to("user_visited_page_counts", Produced.with(Serdes.String(), Serdes.Long()));
 
         // Build and start the Kafka Streams application
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
-
-        // Add shutdown hook for graceful termination
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 }

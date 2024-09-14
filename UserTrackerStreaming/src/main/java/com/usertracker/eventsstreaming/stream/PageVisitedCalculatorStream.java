@@ -32,17 +32,17 @@ public class PageVisitedCalculatorStream {
         // Stream from the 'user_clicks' topic
         KStream<String, String> pageViewStream = builder.stream(INPUT_TOPIC);
 
-        // Transform the value to extract page information
-        KStream<String, String> pageStream = pageViewStream.mapValues(value -> {
-            // Extract page information from the value (e.g., "User user_1 visited product-1")
-            String[] parts = value.split(" ");
-            return parts[parts.length - 1];  // Extracts the page (e.g., "product-1"), assuming the format is always the same
-        });
+        KTable<String, Long> pageViewCounts = pageViewStream
+                                                //map val from "User user_1 visited product-1" to "product-1"
+                                                .mapValues(value -> {
+                                                        String[] parts = value.split(" ");
+                                                        return parts[parts.length - 1];
+                                                        })
+                                                .selectKey((key, val) -> val)  // Select new key (product-1), discard old key
+                                                .groupByKey() // Group by new key before aggregation
+                                                .count(Materialized.as("page_visited_counts-storage"));  // Materialize the count store
 
-        // Group by page and count occurrences
-        KTable<String, Long> pageViewCounts = pageStream
-            .groupBy((key, page) -> page)  // Group by page (e.g., "product-1")
-            .count(Materialized.as("page_visited_counts-storage"));  // Materialize the count store
+
 
         // Output the aggregated counts to a new Kafka topic ('number-of-visited-per-page')
         pageViewCounts.toStream().to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));

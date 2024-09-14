@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class UserClickProducer {
 
-    private static final String[] PAGES = {"home", "about", "products", "contact"};
+    private static final String[] PAGES = {"product-abc", "product-1", "product-2", "product-3"};
     private static final String[] USERS = {"user_1", "user_2", "user_3", "user_4"};
 
     public static void main(String[] args) {
@@ -26,7 +26,7 @@ public class UserClickProducer {
 
         // Generate and send random page view events
         Random random = new Random();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             String userId = USERS[random.nextInt(USERS.length)];
             String pageId = PAGES[random.nextInt(PAGES.length)];
             String event = String.format("User %s visited %s", userId, pageId);
