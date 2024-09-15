@@ -35,7 +35,7 @@ public class UserVisitedPerPageStream {
                                                 })
                                                 .selectKey((key, val) -> val) // Select new key (user_3-product-1), discard old key
                                                 .groupByKey()  // Group by new key before aggregation
-                                                .count(Materialized.as("user_visited_page_counts-storage"));
+                                                .count(Materialized.as("counts"));
 
         // Output the aggregated counts to a new Kafka topic ('page_view_counts')
         userPageViewCounts.toStream().to("user_visited_page_counts", Produced.with(Serdes.String(), Serdes.Long()));

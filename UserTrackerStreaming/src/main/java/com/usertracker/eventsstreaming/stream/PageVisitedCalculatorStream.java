@@ -2,12 +2,15 @@ package com.usertracker.eventsstreaming.stream;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StoreQueryParameters;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 
 import java.util.Properties;
 
@@ -40,7 +43,7 @@ public class PageVisitedCalculatorStream {
                                                         })
                                                 .selectKey((key, val) -> val)  // Select new key (product-1), discard old key
                                                 .groupByKey() // Group by new key before aggregation
-                                                .count(Materialized.as("page_visited_counts-storage"));  // Materialize the count store
+                                                .count(Materialized.as("counts"));  // Materialize the count store
 
 
 
@@ -50,6 +53,7 @@ public class PageVisitedCalculatorStream {
         // Build and start the Kafka Streams application
         KafkaStreams streams = new KafkaStreams(builder.build(), props);
         streams.start();
+
 
         // Add shutdown hook for graceful termination
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
