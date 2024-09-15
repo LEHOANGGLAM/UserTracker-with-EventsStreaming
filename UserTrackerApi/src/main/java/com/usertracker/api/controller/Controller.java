@@ -28,8 +28,8 @@ public class Controller {
         KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps);
 
         // Produce the updated count to the output topic
-        String event = String.format("User %s visited %s", null, productId);
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(OUTPUT_TOPIC, String.valueOf(userId), String.valueOf(event));
+        String event = String.format("User %s visited %s", userId, productId);
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(OUTPUT_TOPIC, null, String.valueOf(event));
         producer.send(producerRecord);
 
         return ResponseEntity.ok(productId + "\nThis is the discription");
