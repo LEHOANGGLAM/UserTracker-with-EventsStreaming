@@ -12,5 +12,5 @@ docker exec -it <kafka_container_id> kafka-topics --create --topic user_visited_
 ```
 4. Open the UserTrackerApi project in your favorite IDEA, set up the Java SDK and launch the project:
 4. Open the UserTrackerStreaming project in your favorite IDEA, set up the Java SDK and launch two streaming flows:
-5. Open your browser, now you can access the api, sample: `http://localhost:8080/user-id/products/product-id` 
+5. Open your browser, now you can access the api, sample: `http://localhost:8080/user-id/products/product-id` and test out the streaming events
 
